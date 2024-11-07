@@ -14,6 +14,7 @@ public class Book {
         this.price = price;
     }
 
+    // Getters and setters with O(1) time complexity
     public int getId() {
         return id;
     }
@@ -40,5 +41,23 @@ public class Book {
 
     public double getPrice() {
         return price;
+    }
+
+    // Utility method to check if the book's data is valid
+    public boolean isValid() {
+        // O(1) time complexity for simple validation checks
+        return quantity >= 0 && price >= 0;
+    }
+
+    @Override
+    public String toString() {
+        // O(1) time complexity for creating a string representation
+        return "Book{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", author='" + author + '\'' +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                '}';
     }
 }

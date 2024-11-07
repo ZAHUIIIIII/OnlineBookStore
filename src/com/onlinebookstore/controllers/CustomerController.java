@@ -5,7 +5,6 @@ import com.onlinebookstore.models.Order;
 import com.onlinebookstore.services.BookService;
 import com.onlinebookstore.services.OrderService;
 import com.onlinebookstore.structures.CustomArrayList;
-
 import java.util.Scanner;
 
 public class CustomerController {
@@ -24,26 +23,23 @@ public class CustomerController {
             System.out.print("Choose an option: ");
             int option = scanner.nextInt();
             scanner.nextLine(); // Consume newline
+
             switch (option) {
-                case 1 -> viewAllBooks();
+                case 1 -> viewAllBooks(); // O(n log n) for sorting and O(n) for display
                 case 2 -> viewAllBooksAndAddToCart();
                 case 3 -> viewMyOrders();
                 case 4 -> running = false;
-                default -> System.out.println("Invalid option");
+                default -> System.out.println("Invalid option. Please try again.");
             }
         }
     }
 
     private static void viewAllBooks() {
         CustomArrayList<Book> allBooks = bookService.getAllBooks();
-        allBooks.sort(new CustomArrayList.CustomComparator<Book>() {
-            @Override
-            public int compare(Book b1, Book b2) {
-                return b1.getTitle().compareToIgnoreCase(b2.getTitle());
-            }
-        });
+        allBooks.mergeSort((b1, b2) -> b1.getTitle().compareToIgnoreCase(b2.getTitle())); // O(n log n) for sorting
+
         System.out.println("All Books:");
-        for (int i = 0; i < allBooks.size(); i++) {
+        for (int i = 0; i < allBooks.size(); i++) { // O(n) for display
             Book book = allBooks.get(i);
             System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
         }
@@ -55,17 +51,7 @@ public class CustomerController {
         CustomArrayList<Book> allBooks = bookService.getAllBooks();
 
         while (true) {
-            System.out.println("All Books:");
-            allBooks.sort(new CustomArrayList.CustomComparator<Book>() {
-                @Override
-                public int compare(Book b1, Book b2) {
-                    return b1.getTitle().compareToIgnoreCase(b2.getTitle());
-                }
-            });
-            for (int i = 0; i < allBooks.size(); i++) {
-                Book book = allBooks.get(i);
-                System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
-            }
+            showAllBooks(allBooks); // Method to display books
 
             System.out.println("Options:");
             System.out.println("1. Search by Title");
@@ -82,15 +68,7 @@ public class CustomerController {
             }
 
             switch (option) {
-                case 1, 2 -> {
-                    // Show all books before performing the search
-                    System.out.println("All Books:");
-                    for (int i = 0; i < allBooks.size(); i++) {
-                        Book book = allBooks.get(i);
-                        System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
-                    }
-                    searchAndAddBooks(allBooks, shoppingCart, quantities, option);
-                }
+                case 1, 2 -> searchAndAddBooks(allBooks, shoppingCart, quantities, option);
                 case 3 -> addMultipleBooksToCart(allBooks, shoppingCart, quantities);
                 case 4 -> viewCartAndCheckout(shoppingCart, quantities);
                 default -> System.out.println("Invalid option. Please try again.");
@@ -98,30 +76,31 @@ public class CustomerController {
         }
     }
 
+    private static void showAllBooks(CustomArrayList<Book> allBooks) {
+        allBooks.mergeSort((b1, b2) -> b1.getTitle().compareToIgnoreCase(b2.getTitle())); // O(n log n)
+
+        System.out.println("All Books:");
+        for (int i = 0; i < allBooks.size(); i++) { // O(n)
+            Book book = allBooks.get(i);
+            System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
+        }
+    }
+
     private static void searchAndAddBooks(CustomArrayList<Book> allBooks, CustomArrayList<Book> shoppingCart, CustomArrayList<Integer> quantities, int searchOption) {
         String searchQuery = getInput("Enter search query: ");
         CustomArrayList<Book> searchResults = new CustomArrayList<>();
 
-        if (searchOption == 1) {
-            for (int i = 0; i < allBooks.size(); i++) {
-                if (allBooks.get(i).getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
-                    searchResults.add(allBooks.get(i));
-                }
-            }
-        } else if (searchOption == 2) {
-            for (int i = 0; i < allBooks.size(); i++) {
-                if (allBooks.get(i).getAuthor().toLowerCase().contains(searchQuery.toLowerCase())) {
-                    searchResults.add(allBooks.get(i));
-                }
+        // O(n) for linear search
+        for (int i = 0; i < allBooks.size(); i++) {
+            Book book = allBooks.get(i);
+            if ((searchOption == 1 && book.getTitle().toLowerCase().contains(searchQuery.toLowerCase())) ||
+                (searchOption == 2 && book.getAuthor().toLowerCase().contains(searchQuery.toLowerCase()))) {
+                searchResults.add(book);
             }
         }
 
         if (!searchResults.isEmpty()) {
-            System.out.println("Search Results:");
-            for (int i = 0; i < searchResults.size(); i++) {
-                Book book = searchResults.get(i);
-                System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
-            }
+            displaySearchResults(searchResults);
 
             int bookNumber = getIntInput("Enter book number to add to cart (or 0 to return): ");
             if (bookNumber == 0) {
@@ -134,25 +113,36 @@ public class CustomerController {
             }
 
             Book book = searchResults.get(bookNumber - 1);
-
-            if (book.getQuantity() <= 0) {
-                System.out.println("Book is out of stock. Please choose another book.");
-                return;
-            }
-
-            int quantity = getIntInput("Enter quantity for book (available: " + book.getQuantity() + "): ");
-            if (quantity > book.getQuantity()) {
-                System.out.println("Ordered quantity exceeds available stock.");
-                return;
-            }
-
-            shoppingCart.add(book);
-            quantities.add(quantity);
-            book.setQuantity(book.getQuantity() - quantity);
-            System.out.println("Book added to cart.");
+            handleBookAdditionToCart(book, shoppingCart, quantities);
         } else {
             System.out.println("No books found matching the search criteria.");
         }
+    }
+
+    private static void displaySearchResults(CustomArrayList<Book> searchResults) {
+        System.out.println("Search Results:");
+        for (int i = 0; i < searchResults.size(); i++) { // O(n)
+            Book book = searchResults.get(i);
+            System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
+        }
+    }
+
+    private static void handleBookAdditionToCart(Book book, CustomArrayList<Book> shoppingCart, CustomArrayList<Integer> quantities) {
+        if (book.getQuantity() <= 0) {
+            System.out.println("Book is out of stock. Please choose another book.");
+            return;
+        }
+
+        int quantity = getIntInput("Enter quantity for book (available: " + book.getQuantity() + "): ");
+        if (quantity > book.getQuantity()) {
+            System.out.println("Ordered quantity exceeds available stock.");
+            return;
+        }
+
+        shoppingCart.add(book);
+        quantities.add(quantity);
+        book.setQuantity(book.getQuantity() - quantity); // Update stock
+        System.out.println("Book added to cart.");
     }
 
     private static void addMultipleBooksToCart(CustomArrayList<Book> allBooks, CustomArrayList<Book> shoppingCart, CustomArrayList<Integer> quantities) {
@@ -188,7 +178,7 @@ public class CustomerController {
 
             shoppingCart.add(book);
             quantities.add(quantity);
-            book.setQuantity(book.getQuantity() - quantity);
+            book.setQuantity(book.getQuantity() - quantity); // Update stock
             System.out.println("Book added to cart.");
         }
     }
@@ -240,9 +230,9 @@ public class CustomerController {
 
         Book book = shoppingCart.get(bookNumber - 1);
         int quantity = quantities.get(bookNumber - 1);
-        book.setQuantity(book.getQuantity() + quantity); // Update the book's quantity in the inventory
-        shoppingCart.remove(bookNumber - 1); // Remove the book from the shopping cart
-        quantities.remove(bookNumber - 1); // Remove the quantity from the quantities list
+        book.setQuantity(book.getQuantity() + quantity); // Restore the book's quantity in the inventory
+        shoppingCart.remove(bookNumber - 1); // Remove the book from the cart
+        quantities.remove(bookNumber - 1); // Remove the quantity from the list
         System.out.println("Book removed from cart.");
     }
 
