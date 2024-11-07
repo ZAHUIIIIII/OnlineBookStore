@@ -57,12 +57,7 @@ public class OrderService {
     }
 
     public void sortOrdersById() {
-        orders.mergeSort(new CustomArrayList.CustomComparator<Order>() {
-            @Override
-            public int compare(Order o1, Order o2) {
-                return Integer.compare(o1.getId(), o2.getId());
-            }
-        });
+        orders.mergeSort((Order o1, Order o2) -> Integer.compare(o1.getId(), o2.getId()));
     }
 
     public void addOrderToQueue(Order order) {

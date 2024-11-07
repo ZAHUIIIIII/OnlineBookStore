@@ -5,7 +5,6 @@ import com.onlinebookstore.models.Order;
 import com.onlinebookstore.services.BookService;
 import com.onlinebookstore.services.OrderService;
 import com.onlinebookstore.structures.CustomArrayList;
-
 import java.util.Scanner;
 
 public class AdminController {
@@ -50,12 +49,7 @@ public class AdminController {
             System.out.println("No orders found.");
             return;
         }
-        orders.mergeSort(new CustomArrayList.CustomComparator<Order>() {
-            @Override
-            public int compare(Order o1, Order o2) {
-                return o1.getCustomerName().compareToIgnoreCase(o2.getCustomerName());
-            }
-        });
+        orders.mergeSort((Order o1, Order o2) -> o1.getCustomerName().compareToIgnoreCase(o2.getCustomerName()));
         for (Order order : orders) {
             System.out.println("Order ID: " + order.getId());
             System.out.println("Customer Name: " + order.getCustomerName());
@@ -138,12 +132,7 @@ public class AdminController {
     private static void viewAllBooks() {
         System.out.println("All Books:");
         CustomArrayList<Book> books = bookService.getAllBooks();
-        books.mergeSort(new CustomArrayList.CustomComparator<Book>() {
-            @Override
-            public int compare(Book b1, Book b2) {
-                return b1.getTitle().compareToIgnoreCase(b2.getTitle());
-            }
-        });
+        books.mergeSort((Book b1, Book b2) -> b1.getTitle().compareToIgnoreCase(b2.getTitle()));
         for (Book book : books) {
             System.out.println("Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
         }
@@ -164,21 +153,25 @@ public class AdminController {
             String searchQuery = getInput("Enter search query: ");
             CustomArrayList<Book> searchResults = new CustomArrayList<>();
 
-            if (searchOption == 1) {
-                for (Book book : books) {
-                    if (book.getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
-                        searchResults.add(book);
+            switch (searchOption) {
+                case 1 -> {
+                    for (Book book : books) {
+                        if (book.getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
+                            searchResults.add(book);
+                        }
                     }
                 }
-            } else if (searchOption == 2) {
-                for (Book book : books) {
-                    if (book.getAuthor().toLowerCase().contains(searchQuery.toLowerCase())) {
-                        searchResults.add(book);
+                case 2 -> {
+                    for (Book book : books) {
+                        if (book.getAuthor().toLowerCase().contains(searchQuery.toLowerCase())) {
+                            searchResults.add(book);
+                        }
                     }
                 }
-            } else {
-                System.out.println("Invalid option. Please try again.");
-                continue;
+                default -> {
+                    System.out.println("Invalid option. Please try again.");
+                    continue;
+                }
             }
 
             if (!searchResults.isEmpty()) {
