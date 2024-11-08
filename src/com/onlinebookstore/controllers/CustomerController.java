@@ -51,7 +51,6 @@ public class CustomerController {
         CustomArrayList<Book> allBooks = bookService.getAllBooks();
 
         while (true) {
-            showAllBooks(allBooks); // Method to display books
 
             System.out.println("Options:");
             System.out.println("1. Search by Title");
@@ -73,16 +72,6 @@ public class CustomerController {
                 case 4 -> viewCartAndCheckout(shoppingCart, quantities);
                 default -> System.out.println("Invalid option. Please try again.");
             }
-        }
-    }
-
-    private static void showAllBooks(CustomArrayList<Book> allBooks) {
-        allBooks.mergeSort((b1, b2) -> b1.getTitle().compareToIgnoreCase(b2.getTitle())); // O(n log n)
-
-        System.out.println("All Books:");
-        for (int i = 0; i < allBooks.size(); i++) { // O(n)
-            Book book = allBooks.get(i);
-            System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
         }
     }
 
