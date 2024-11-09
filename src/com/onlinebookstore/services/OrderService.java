@@ -43,10 +43,9 @@ public class OrderService {
 
     public CustomArrayList<Book> getBooksByIds(CustomArrayList<Integer> bookIds, CustomArrayList<Book> allBooks) {
         CustomArrayList<Book> books = new CustomArrayList<>();
-        for (int i = 0; i < bookIds.size(); i++) {
-            int id = bookIds.get(i);
-            for (int j = 0; j < allBooks.size(); j++) {
-                Book book = allBooks.get(j);
+        for (int id : bookIds) {
+            for (int i = 0; i < allBooks.size(); i++) {
+                Book book = allBooks.get(i);
                 if (book.getId() == id) {
                     books.add(book);
                     break;
@@ -57,7 +56,12 @@ public class OrderService {
     }
 
     public void sortOrdersById() {
-        orders.mergeSort((Order o1, Order o2) -> Integer.compare(o1.getId(), o2.getId()));
+        orders.mergeSort(new CustomArrayList.CustomComparator<Order>() {
+            @Override
+            public int compare(Order o1, Order o2) {
+                return Integer.compare(o1.getId(), o2.getId());
+            }
+        });
     }
 
     public void addOrderToQueue(Order order) {
@@ -70,6 +74,33 @@ public class OrderService {
         } else {
             System.out.println("No orders to process.");
             return null;
+        }
+    }
+
+    public void cancelOrder(int orderId) {
+        Order order = getOrderById(orderId);
+        if (order != null && !order.isApproved()) {
+            // Remove from orders list
+            for (int i = 0; i < orders.size(); i++) {
+                if (orders.get(i).getId() == orderId) {
+                    orders.remove(i);
+                    break;
+                }
+            }
+            // Remove from queue if it exists
+            CustomQueue<Order> tempQueue = new CustomQueue<>();
+            while (!orderQueue.isEmpty()) {
+                Order queuedOrder = orderQueue.dequeue();
+                if (queuedOrder.getId() != orderId) {
+                    tempQueue.enqueue(queuedOrder);
+                }
+            }
+            while (!tempQueue.isEmpty()) {
+                orderQueue.enqueue(tempQueue.dequeue());
+            }
+            System.out.println("Order ID " + orderId + " has been canceled.");
+        } else {
+            System.out.println("Order not found or already approved.");
         }
     }
 }

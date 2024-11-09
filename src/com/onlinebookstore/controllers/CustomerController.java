@@ -204,7 +204,7 @@ public class CustomerController {
 
             switch (cartOption) {
                 case 1 -> removeBookFromCart(shoppingCart, quantities);
-                case 2 -> proceedToPayment(shoppingCart, quantities, totalPrice);
+                case 2 -> proceedToPayment(shoppingCart, quantities, totalPrice); 
                 default -> System.out.println("Invalid option. Please try again.");
             }
         }
@@ -243,6 +243,10 @@ public class CustomerController {
         }
         orderService.placeOrder(order);
         System.out.println("Order placed successfully. Total Price: " + totalPrice);
+
+        shoppingCart.clear();
+        quantities.clear();
+        
     }
 
     private static void viewMyOrders() {

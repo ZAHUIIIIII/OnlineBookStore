@@ -6,6 +6,8 @@ import com.onlinebookstore.services.BookService;
 import com.onlinebookstore.services.OrderService;
 import com.onlinebookstore.structures.CustomArrayList;
 import com.onlinebookstore.structures.CustomStack;
+
+import java.util.Iterator;
 import java.util.Scanner;
 
 public class AdminController {
@@ -26,10 +28,9 @@ public class AdminController {
             System.out.println("1. View all orders");
             System.out.println("2. Add book");
             System.out.println("3. View all books");
-            System.out.println("4. Approve orders");
-            System.out.println("5. Process order queue");
-            System.out.println("6. Undo last action");
-            System.out.println("7. Exit");
+            System.out.println("4. Process Orders");
+            System.out.println("5. Undo last action");
+            System.out.println("6. Exit");
             System.out.print("Choose an option: ");
             int option = scanner.nextInt();
             scanner.nextLine();
@@ -37,10 +38,9 @@ public class AdminController {
                 case 1 -> viewAllOrders();
                 case 2 -> addBook();
                 case 3 -> viewAllBooks();
-                case 4 -> approveOrders();
-                case 5 -> processOrderQueue();
-                case 6 -> undoLastAction();
-                case 7 -> running = false;
+                case 4 -> processOrders();
+                case 5 -> undoLastAction();
+                case 6 -> running = false;
                 default -> System.out.println("Invalid option");
             }
         }
@@ -59,8 +59,8 @@ public class AdminController {
         }
     }
 
-    private static void approveOrders() {
-        System.out.println("Approve Orders:");
+    private static void processOrders() {
+        System.out.println("Process Orders:");
         CustomArrayList<Order> orders = orderService.getAllOrders();
         if (orders.isEmpty()) {
             System.out.println("No orders found.");
@@ -69,35 +69,25 @@ public class AdminController {
         for (Order order : orders) {
             System.out.println("Order ID: " + order.getId() + ", Customer Name: " + order.getCustomerName() + ", Approved: " + (order.isApproved() ? "Yes" : "No"));
         }
-        int orderId = getIntInput("Enter order ID to approve (or 0 to return): ");
+        int orderId = getIntInput("Enter order ID to approve and process (or 0 to return): ");
         if (orderId == 0) {
             return;
         }
         Order order = orderService.getOrderById(orderId);
         if (order != null) {
             displayOrderDetails(order);
-            System.out.print("Do you want to approve this order? (yes/no): ");
+            System.out.print("Do you want to approve and process this order? (yes/no): ");
             String approve = scanner.nextLine().trim().toLowerCase();
             if (approve.equals("yes") || approve.equals("y")) {
                 order.setApproved(true);
-                actionHistory.push("Approved order ID: " + orderId);
-                System.out.println("Order ID " + orderId + " has been approved.");
+                actionHistory.push("Approved and processed order ID: " + orderId);
+                System.out.println("Order ID " + orderId + " has been approved and processed.");
+                orderService.processNextOrder();
             } else {
-                System.out.println("Order approval cancelled.");
+                System.out.println("Order approval and processing cancelled.");
             }
         } else {
             System.out.println("Order not found.");
-        }
-    }
-
-    private static void processOrderQueue() {
-        System.out.println("Processing Order Queue:");
-        Order order = orderService.processNextOrder();
-        if (order != null) {
-            displayOrderDetails(order);
-            actionHistory.push("Processed order ID: " + order.getId());
-        } else {
-            System.out.println("No orders to process.");
         }
     }
 
@@ -135,25 +125,21 @@ public class AdminController {
             String searchQuery = getInput("Enter search query: ");
             CustomArrayList<Book> searchResults = new CustomArrayList<>();
 
-            switch (searchOption) {
-                case 1 -> {
-                    for (int i = 0; i < books.size(); i++) {
-                        if (books.get(i).getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
-                            searchResults.add(books.get(i));
-                        }
+            if (searchOption == 1) {
+                for (int i = 0; i < books.size(); i++) {
+                    if (books.get(i).getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
+                        searchResults.add(books.get(i));
                     }
                 }
-                case 2 -> {
-                    for (int i = 0; i < books.size(); i++) {
-                        if (books.get(i).getAuthor().toLowerCase().contains(searchQuery.toLowerCase())) {
-                            searchResults.add(books.get(i));
-                        }
+            } else if (searchOption == 2) {
+                for (int i = 0; i < books.size(); i++) {
+                    if (books.get(i).getAuthor().toLowerCase().contains(searchQuery.toLowerCase())) {
+                        searchResults.add(books.get(i));
                     }
                 }
-                default -> {
-                    System.out.println("Invalid option. Please try again.");
-                    continue;
-                }
+            } else {
+                System.out.println("Invalid option. Please try again.");
+                continue;
             }
 
             if (!searchResults.isEmpty()) {
@@ -164,33 +150,6 @@ public class AdminController {
                 }
             } else {
                 System.out.println("No books found matching the search criteria.");
-            }
-        }
-    }
-
-    private static void undoLastAction() {
-        if (actionHistory.isEmpty()) {
-            System.out.println("No actions to undo.");
-            return;
-        }
-        String lastAction = actionHistory.pop();
-        System.out.println("Undoing last action: " + lastAction);
-        if (lastAction.startsWith("Approved order ID: ")) {
-            int orderId = Integer.parseInt(lastAction.substring("Approved order ID: ".length()));
-            Order order = orderService.getOrderById(orderId);
-            if (order != null) {
-                order.setApproved(false);
-                System.out.println("Order ID " + orderId + " has been unapproved.");
-            }
-        } else if (lastAction.startsWith("Added book: ")) {
-            String bookTitle = lastAction.substring("Added book: ".length());
-            CustomArrayList<Book> books = bookService.getAllBooks();
-            for (int i = 0; i < books.size(); i++) {
-                if (books.get(i).getTitle().equals(bookTitle)) {
-                    books.remove(i);
-                    System.out.println("Book titled '" + bookTitle + "' has been removed.");
-                    break;
-                }
             }
         }
     }
@@ -252,4 +211,41 @@ public class AdminController {
         }
         return input;
     }
+    private static void undoLastAction() {
+        if (actionHistory.isEmpty()) {
+            System.out.println("No actions to undo.");
+            return;
+        }
+        String lastAction = actionHistory.pop();
+        System.out.println("Undoing last action: " + lastAction);
+    
+        if (lastAction.startsWith("Approved order ID: ")) {
+            int orderId = Integer.parseInt(lastAction.substring("Approved order ID: ".length()));
+            Order order = orderService.getOrderById(orderId);
+            if (order != null) {
+                order.setApproved(false);
+                System.out.println("Order ID " + orderId + " has been unapproved.");
+            }
+        } else if (lastAction.startsWith("Processed order ID: ")) {
+            int orderId = Integer.parseInt(lastAction.substring("Processed order ID: ".length()));
+            Order order = orderService.getOrderById(orderId);
+            if (order != null) {
+                orderService.addOrderToQueue(order);
+                System.out.println("Order ID " + orderId + " has been added back to the processing queue.");
+            }
+        } else if (lastAction.startsWith("Added book: ")) {
+            String bookTitle = lastAction.substring("Added book: ".length());
+            CustomArrayList<Book> books = bookService.getAllBooks();
+            for (Iterator<Book> iterator = books.iterator(); iterator.hasNext(); ) {
+                Book book = iterator.next();
+                if (book.getTitle().equals(bookTitle)) {
+                    iterator.remove();
+                    System.out.println("Book titled '" + bookTitle + "' has been removed.");
+                    break;
+                }
+            }
+        }
+    }
+    
+    
 }

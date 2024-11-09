@@ -75,94 +75,27 @@ public class CustomArrayList<T> implements Iterable<T> {
         return size == 0;
     }
 
-    // Clear method to empty the list
-    public void clear() {
-        for (int i = 0; i < size; i++) {
-            elements[i] = null;
-        }
-        size = 0;
-    }
-
-    // Check if the list contains a specific element
-    public boolean contains(T element) {
-        for (int i = 0; i < size; i++) {
-            if (elements[i].equals(element)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Resize method to increase the capacity of the list
+    // Method to resize the internal array
     private void resize() {
         Object[] newElements = new Object[elements.length * 2];
         System.arraycopy(elements, 0, newElements, 0, elements.length);
         elements = newElements;
     }
 
-    // Binary search method (assumes the list is sorted)
-    public int binarySearch(T target, CustomComparator<T> comparator) {
-        // O(log n) time complexity
-        int left = 0;
-        int right = size - 1;
-        while (left <= right) {
-            int mid = (left + right) / 2;
-            int compareResult = comparator.compare((T) elements[mid], target);
-            if (compareResult == 0) {
-                return mid;
-            } else if (compareResult < 0) {
-                left = mid + 1;
-            } else {
-                right = mid - 1;
-            }
-        }
-        return -1; // Not found
+    // Method to clear the list
+    public void clear() {
+        elements = new Object[DEFAULT_CAPACITY];
+        size = 0;
     }
 
-    // Sort using mergeSort
-    public void mergeSort(CustomComparator<T> comparator) {
-        mergeSortHelper(0, size - 1, comparator);
-    }
-
-    private void mergeSortHelper(int left, int right, CustomComparator<T> comparator) {
-        if (left < right) {
-            int mid = (left + right) / 2;
-            mergeSortHelper(left, mid, comparator);
-            mergeSortHelper(mid + 1, right, comparator);
-            merge(left, mid, right, comparator);
-        }
-    }
-
-    private void merge(int left, int mid, int right, CustomComparator<T> comparator) {
-        Object[] tempArray = new Object[right - left + 1];
-        int i = left, j = mid + 1, k = 0;
-
-        while (i <= mid && j <= right) {
-            if (comparator.compare((T) elements[i], (T) elements[j]) <= 0) {
-                tempArray[k++] = elements[i++];
-            } else {
-                tempArray[k++] = elements[j++];
-            }
-        }
-        while (i <= mid) {
-            tempArray[k++] = elements[i++];
-        }
-        while (j <= right) {
-            tempArray[k++] = elements[j++];
-        }
-        for (i = left, k = 0; i <= right; i++, k++) {
-            elements[i] = tempArray[k];
-        }
-    }
-
-    // Return an iterator for the list
     @Override
     public Iterator<T> iterator() {
-        return new CustomArrayListIterator();
+        return new CustomIterator();
     }
 
-    private class CustomArrayListIterator implements Iterator<T> {
+    private class CustomIterator implements Iterator<T> {
         private int currentIndex = 0;
+        private boolean canRemove = false;
 
         @Override
         public boolean hasNext() {
@@ -174,11 +107,63 @@ public class CustomArrayList<T> implements Iterable<T> {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
+            canRemove = true;
             return (T) elements[currentIndex++];
+        }
+
+        @Override
+        public void remove() {
+            if (!canRemove) {
+                throw new IllegalStateException();
+            }
+            CustomArrayList.this.remove(--currentIndex);
+            canRemove = false;
         }
     }
 
-    // Comparator interface
+    // Method to sort the list using merge sort
+    public void mergeSort(CustomComparator<T> comparator) {
+        if (size > 1) {
+            Object[] tempArray = new Object[size];
+            mergeSortHelper(elements, tempArray, 0, size - 1, comparator);
+        }
+    }
+
+    private void mergeSortHelper(Object[] array, Object[] tempArray, int leftStart, int rightEnd, CustomComparator<T> comparator) {
+        if (leftStart >= rightEnd) {
+            return;
+        }
+        int middle = (leftStart + rightEnd) / 2;
+        mergeSortHelper(array, tempArray, leftStart, middle, comparator);
+        mergeSortHelper(array, tempArray, middle + 1, rightEnd, comparator);
+        mergeHalves(array, tempArray, leftStart, rightEnd, comparator);
+    }
+
+    private void mergeHalves(Object[] array, Object[] tempArray, int leftStart, int rightEnd, CustomComparator<T> comparator) {
+        int leftEnd = (rightEnd + leftStart) / 2;
+        int rightStart = leftEnd + 1;
+        int size = rightEnd - leftStart + 1;
+
+        int left = leftStart;
+        int right = rightStart;
+        int index = leftStart;
+
+        while (left <= leftEnd && right <= rightEnd) {
+            if (comparator.compare((T) array[left], (T) array[right]) <= 0) {
+                tempArray[index] = array[left];
+                left++;
+            } else {
+                tempArray[index] = array[right];
+                right++;
+            }
+            index++;
+        }
+
+        System.arraycopy(array, left, tempArray, index, leftEnd - left + 1);
+        System.arraycopy(array, right, tempArray, index, rightEnd - right + 1);
+        System.arraycopy(tempArray, leftStart, array, leftStart, size);
+    }
+
     public interface CustomComparator<T> {
         int compare(T o1, T o2);
     }
