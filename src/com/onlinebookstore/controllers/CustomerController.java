@@ -226,8 +226,11 @@ public class CustomerController {
             }
             switch (cartOption) {
                 case 1 -> removeBookFromCart(shoppingCart, quantities);
-                case 2 -> proceedToPayment(shoppingCart, quantities, totalPrice);
-                default -> System.out.println("Invalid option. Please try again.");
+                case 2 ->{ 
+                    proceedToPayment(shoppingCart, quantities, totalPrice);
+                    return; // Exit the method after successful checkout
+                }
+                    default -> System.out.println("Invalid option. Please try again.");
             }
         }
     }
@@ -253,6 +256,32 @@ public class CustomerController {
 
 
     private static void proceedToPayment(CustomArrayList<Book> shoppingCart, CustomArrayList<Integer> quantities, double totalPrice) {
+        displayCart(shoppingCart, quantities, totalPrice);
+        
+        String shippingAddress = getInput("Enter shipping address: ");
+        if (shippingAddress == null || shippingAddress.trim().isEmpty()) {
+            System.out.println("Shipping address cannot be empty.");
+            return;
+        }
+    
+        Order order = new Order("customer", shippingAddress, new CustomArrayList<>(), new CustomArrayList<>());
+        for (int i = 0; i < shoppingCart.size(); i++) {
+            order.getBookIds().add(shoppingCart.get(i).getId());
+            order.getQuantities().add(quantities.get(i));
+        }
+    
+        try {
+            orderService.placeOrder(order);
+            System.out.println("Order placed successfully. Total Price: " + totalPrice);
+            shoppingCart.clear();
+            quantities.clear();
+            System.out.println("Thank you for shopping with us!");
+        } catch (Exception e) {
+            System.err.println("Failed to place order: " + e.getMessage());
+        }
+    }
+    
+    private static void displayCart(CustomArrayList<Book> shoppingCart, CustomArrayList<Integer> quantities, double totalPrice) {
         System.out.println("Your Cart:");
         for (int i = 0; i < shoppingCart.size(); i++) {
             Book book = shoppingCart.get(i);
@@ -261,18 +290,17 @@ public class CustomerController {
             System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + quantity + ", Price: " + book.getPrice() + ", Final Price: " + finalPrice);
         }
         System.out.println("Total Price: " + totalPrice);
-        String shippingAddress = getInput("Enter shipping address: ");
-        Order order = new Order("customer", shippingAddress, new CustomArrayList<>(), new CustomArrayList<>());
-        for (int i = 0; i < shoppingCart.size(); i++) {
-            order.getBookIds().add(shoppingCart.get(i).getId());
-            order.getQuantities().add(quantities.get(i));
-        }
-        orderService.placeOrder(order);
-        System.out.println("Order placed successfully. Total Price: " + totalPrice);
-        shoppingCart.clear();
-        quantities.clear();
-        System.out.println("Thank you for shopping with us!");
     }
+
+
+
+
+
+
+
+
+
+
     private static void viewMyOrders() {
         System.out.println("My Orders:");
         CustomArrayList<Order> orders = orderService.getAllOrders();
