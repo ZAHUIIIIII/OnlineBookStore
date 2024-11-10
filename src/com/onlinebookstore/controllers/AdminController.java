@@ -214,6 +214,9 @@ public class AdminController {
         }
         return input;
     }
+
+
+
     private static void undoLastAction() {
         if (actionHistory.isEmpty()) {
             System.out.println("No actions to undo.");
@@ -222,8 +225,8 @@ public class AdminController {
         String lastAction = actionHistory.pop();
         System.out.println("Undoing last action: " + lastAction);
     
-        if (lastAction.startsWith("Approved order ID: ")) {
-            int orderId = Integer.parseInt(lastAction.substring("Approved order ID: ".length()));
+        if (lastAction.startsWith("Approved and processed order ID: ")) {
+            int orderId = Integer.parseInt(lastAction.substring("Approved and processed order ID: ".length()));
             Order order = orderService.getOrderById(orderId);
             if (order != null) {
                 order.setApproved(false);
@@ -249,6 +252,4 @@ public class AdminController {
             }
         }
     }
-    
-    
 }

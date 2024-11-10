@@ -323,7 +323,6 @@ public class CustomerController {
                     if (order != null && order.getCustomerName().equals("customer")) {
                         if (!order.isApproved()) {
                             orderService.cancelOrder(orderId);
-                            System.out.println("Order ID " + orderId + " has been canceled.");
                         } else {
                             System.out.println("Order ID " + orderId + " is already approved and cannot be canceled.");
                         }
