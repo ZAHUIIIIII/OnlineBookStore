@@ -25,7 +25,7 @@ public class AdminController {
         while (running) {
             System.out.println("Admin Menu:");
             System.out.println("1. View all orders");
-            System.out.println("2. Add book");
+            System.out.println("2. Edit Book");
             System.out.println("3. View all books");
             System.out.println("4. Process Orders");
             System.out.println("5. Undo last action");
@@ -35,7 +35,7 @@ public class AdminController {
             scanner.nextLine();
             switch (option) {
                 case 1 -> viewAllOrders();
-                case 2 -> addBook();
+                case 2 -> editBook();
                 case 3 -> viewAllBooks();
                 case 4 -> processOrders();
                 case 5 -> undoLastAction();
@@ -90,14 +90,179 @@ public class AdminController {
         }
     }
 
-    private static void addBook() {
-        String title = getInput("Enter book title: ");
-        String author = getInput("Enter author: ");
-        int quantity = getIntInput("Enter quantity: ");
-        double price = getDoubleInput("Enter price: ");
-        bookService.addBook(new Book(title, author, quantity, price));
-        actionHistory.push("Added book: " + title);
+
+
+
+
+
+
+private static void addBook() {
+    String title;
+    while (true) {
+        title = getInput("Enter book title: ");
+        if (title == null || title.trim().isEmpty()) {
+            System.out.println("Book title cannot be empty. Please try again.");
+        } else {
+            break;
+        }
     }
+
+    String author;
+    while (true) {
+        author = getInput("Enter author: ");
+        if (author == null || author.trim().isEmpty()) {
+            System.out.println("Author cannot be empty. Please try again.");
+        } else {
+            break;
+        }
+    }
+
+    int quantity;
+    while (true) {
+        quantity = getIntInput("Enter quantity: ");
+        if (quantity <= 0) {
+            System.out.println("Quantity cannot be less than or equal to 0. Please enter a valid quantity.");
+        } else {
+            break;
+        }
+    }
+
+    double price;
+    while (true) {
+        price = getDoubleInput("Enter price: ");
+        if (price < 0) {
+            System.out.println("Price cannot be negative. Please enter a valid price.");
+        } else {
+            break;
+        }
+    }
+
+    Book newBook = new Book(title, author, quantity, price);
+    bookService.addBook(newBook);
+    actionHistory.push("Added book: " + title);
+    System.out.println("Book added successfully: " + newBook);
+}
+
+
+
+
+
+
+
+    private static void editBook() {
+        while (true) {
+            System.out.println("Edit Book Options:");
+            System.out.println("1. Add Book");
+            System.out.println("2. Update Book");
+            System.out.println("3. Delete Book");
+            System.out.println("4. Return to Menu");
+            System.out.print("Choose an option: ");
+            int option = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+    
+            switch (option) {
+                case 1 -> addBook();
+                case 2 -> {
+                    showAllBooks();
+                    updateBook();
+                }
+                case 3 -> {
+                    showAllBooks();
+                    deleteBook();
+                }
+                case 4 -> { return; } // Return to the main menu
+                default -> System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+    private static void updateBook() {
+        int bookId = getIntInput("Enter book ID to update (or 0 to cancel): ");
+        if (bookId == 0) {
+            System.out.println("Update action canceled.");
+            return;
+        }
+        Book book = bookService.getBookById(bookId);
+        if (book == null) {
+            System.out.println("Book not found.");
+            return;
+        }
+    
+        // Store the previous state of the book
+        String previousState = "Updated book: " + book.getId() + ";" + book.getTitle() + ";" + book.getAuthor() + ";" + book.getQuantity() + ";" + book.getPrice();
+    
+        // Display current book information
+        System.out.println("Current Book Information:");
+        System.out.println("Title: " + book.getTitle());
+        System.out.println("Author: " + book.getAuthor());
+        System.out.println("Quantity: " + book.getQuantity());
+        System.out.println("Price: " + book.getPrice());
+    
+        String title = getInput("Enter new book title (or 0 to keep current): ");
+        if (!title.equals("0")) {
+            book.setTitle(title);
+        }
+    
+        String author = getInput("Enter new author (or 0 to keep current): ");
+        if (!author.equals("0")) {
+            book.setAuthor(author);
+        }
+    
+        String quantityInput = getInput("Enter new quantity (or 0 to keep current): ");
+        if (!quantityInput.equals("0")) {
+            try {
+                int quantity = Integer.parseInt(quantityInput);
+                if (quantity >= 0) {
+                    book.setQuantity(quantity);
+                } else {
+                    System.out.println("Quantity cannot be negative. Keeping current quantity.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid quantity input. Keeping current quantity.");
+            }
+        }
+    
+        String priceInput = getInput("Enter new price (or 0 to keep current): ");
+        if (!priceInput.equals("0")) {
+            try {
+                double price = Double.parseDouble(priceInput);
+                if (price >= 0) {
+                    book.setPrice(price);
+                } else {
+                    System.out.println("Price cannot be negative. Keeping current price.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid price input. Keeping current price.");
+            }
+        }
+    
+        bookService.updateBook(book);
+        actionHistory.push(previousState);
+        System.out.println("Book updated successfully: " + book);
+    }
+    
+    private static void deleteBook() {
+        int bookId = getIntInput("Enter book ID to delete (or 0 to cancel): ");
+        if (bookId == 0) {
+            System.out.println("Delete action canceled.");
+            return;
+        }
+        Book book = bookService.getBookById(bookId);
+        if (book == null) {
+            System.out.println("Book not found.");
+            return;
+        }
+    
+        // Store the previous state of the book
+        String previousState = "Deleted book: " + book.getId() + ";" + book.getTitle() + ";" + book.getAuthor() + ";" + book.getQuantity() + ";" + book.getPrice();
+    
+        bookService.deleteBook(bookId);
+        actionHistory.push(previousState);
+        System.out.println("Book deleted successfully: " + book.getTitle());
+    }
+
+
+
+
 
     private static void viewAllBooks() {
         System.out.println("All Books:");
@@ -107,7 +272,6 @@ public class AdminController {
             Book book = books.get(i);
             System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
         }
-
         while (true) {
             System.out.println("Search Options:");
             System.out.println("1. Search by Title");
@@ -116,46 +280,58 @@ public class AdminController {
             System.out.print("Choose an option: ");
             int searchOption = scanner.nextInt();
             scanner.nextLine(); // Consume newline
-
             if (searchOption == 3) {
                 return;
             }
-
-            String searchQuery = getInput("Enter search query: ");
-            CustomArrayList<Book> searchResults = new CustomArrayList<>();
-
             switch (searchOption) {
-                case 1 -> {
-                    for (int i = 0; i < books.size(); i++) {
-                        if (books.get(i).getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
-                            searchResults.add(books.get(i));
-                        }
-                    }
-                }
-                case 2 -> {
-                    for (int i = 0; i < books.size(); i++) {
-                        if (books.get(i).getAuthor().toLowerCase().contains(searchQuery.toLowerCase())) {
-                            searchResults.add(books.get(i));
-                        }
-                    }
-                }
-                default -> {
-                    System.out.println("Invalid option. Please try again.");
-                    continue;
-                }
-            }
-
-            if (!searchResults.isEmpty()) {
-                System.out.println("Search Results:");
-                for (int i = 0; i < searchResults.size(); i++) {
-                    Book book = searchResults.get(i);
-                    System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
-                }
-            } else {
-                System.out.println("No books found matching the search criteria.");
+                case 1, 2 -> searchBooks(books, searchOption);
+                default -> System.out.println("Invalid option. Please try again.");
             }
         }
     }
+
+
+
+
+
+
+    private static void searchBooks(CustomArrayList<Book> books, int searchOption) {
+        String searchQuery = getInput("Enter search query: ");
+        CustomArrayList<Book> searchResults = new CustomArrayList<>();
+        switch (searchOption) {
+            case 1 -> {
+                for (int i = 0; i < books.size(); i++) {
+                    if (books.get(i).getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
+                        searchResults.add(books.get(i));
+                    }
+                }
+            }
+            case 2 -> {
+                for (int i = 0; i < books.size(); i++) {
+                    if (books.get(i).getAuthor().toLowerCase().contains(searchQuery.toLowerCase())) {
+                        searchResults.add(books.get(i));
+                    }
+                }
+            }
+            default -> {
+                System.out.println("Invalid option. Please try again.");
+                return;
+            }
+        }
+        if (!searchResults.isEmpty()) {
+            System.out.println("Search Results:");
+            for (int i = 0; i < searchResults.size(); i++) {
+                Book book = searchResults.get(i);
+                System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
+            }
+        } else {
+            System.out.println("No books found matching the search criteria.");
+        }
+    }
+
+
+
+
 
     private static void displayOrderDetails(Order order) {
         System.out.println("Order ID: " + order.getId());
@@ -177,6 +353,84 @@ public class AdminController {
         System.out.println("Total Price: " + totalPrice);
         System.out.println("Approved: " + (order.isApproved() ? "Yes" : "No"));
     }
+
+
+
+
+
+
+
+
+    private static void undoLastAction() {
+        if (actionHistory.isEmpty()) {
+            System.out.println("No actions to undo.");
+            return;
+        }
+        String lastAction = actionHistory.pop();
+        System.out.println("Undoing last action: " + lastAction);
+    
+        if (lastAction.startsWith("Approved and processed order ID: ")) {
+            int orderId = Integer.parseInt(lastAction.substring("Approved and processed order ID: ".length()));
+            Order order = orderService.getOrderById(orderId);
+            if (order != null) {
+                order.setApproved(false);
+                System.out.println("Order ID " + orderId + " has been unapproved.");
+            }
+        } else if (lastAction.startsWith("Processed order ID: ")) {
+            int orderId = Integer.parseInt(lastAction.substring("Processed order ID: ".length()));
+            Order order = orderService.getOrderById(orderId);
+            if (order != null) {
+                orderService.addOrderToQueue(order);
+                System.out.println("Order ID " + orderId + " has been added back to the processing queue.");
+            }
+        } else if (lastAction.startsWith("Added book: ")) {
+            String bookTitle = lastAction.substring("Added book: ".length());
+            CustomArrayList<Book> books = bookService.getAllBooks();
+            for (Iterator<Book> iterator = books.iterator(); iterator.hasNext(); ) {
+                Book book = iterator.next();
+                if (book.getTitle().equals(bookTitle)) {
+                    iterator.remove();
+                    System.out.println("Book titled '" + bookTitle + "' has been removed.");
+                    break;
+                }
+            }
+        } else if (lastAction.startsWith("Updated book: ")) {
+            String[] parts = lastAction.substring("Updated book: ".length()).split(";");
+            int bookId = Integer.parseInt(parts[0]);
+            String title = parts[1];
+            String author = parts[2];
+            int quantity = Integer.parseInt(parts[3]);
+            double price = Double.parseDouble(parts[4]);
+    
+            Book book = bookService.getBookById(bookId);
+            if (book != null) {
+                book.setTitle(title);
+                book.setAuthor(author);
+                book.setQuantity(quantity);
+                book.setPrice(price);
+                bookService.updateBook(book);
+                System.out.println("Book with ID " + bookId + " has been restored to its previous state.");
+            }
+        } else if (lastAction.startsWith("Deleted book: ")) {
+            String[] parts = lastAction.substring("Deleted book: ".length()).split(";");
+            int bookId = Integer.parseInt(parts[0]);
+            String title = parts[1];
+            String author = parts[2];
+            int quantity = Integer.parseInt(parts[3]);
+            double price = Double.parseDouble(parts[4]);
+    
+            Book book = new Book(title, author, quantity, price);
+            book.setId(bookId);
+            bookService.addBook(book);
+            System.out.println("Book with ID " + bookId + " has been restored.");
+        }
+    }
+
+
+
+
+
+
 
     private static String getInput(String prompt) {
         System.out.print(prompt);
@@ -217,39 +471,15 @@ public class AdminController {
 
 
 
-    private static void undoLastAction() {
-        if (actionHistory.isEmpty()) {
-            System.out.println("No actions to undo.");
-            return;
-        }
-        String lastAction = actionHistory.pop();
-        System.out.println("Undoing last action: " + lastAction);
-    
-        if (lastAction.startsWith("Approved and processed order ID: ")) {
-            int orderId = Integer.parseInt(lastAction.substring("Approved and processed order ID: ".length()));
-            Order order = orderService.getOrderById(orderId);
-            if (order != null) {
-                order.setApproved(false);
-                System.out.println("Order ID " + orderId + " has been unapproved.");
-            }
-        } else if (lastAction.startsWith("Processed order ID: ")) {
-            int orderId = Integer.parseInt(lastAction.substring("Processed order ID: ".length()));
-            Order order = orderService.getOrderById(orderId);
-            if (order != null) {
-                orderService.addOrderToQueue(order);
-                System.out.println("Order ID " + orderId + " has been added back to the processing queue.");
-            }
-        } else if (lastAction.startsWith("Added book: ")) {
-            String bookTitle = lastAction.substring("Added book: ".length());
-            CustomArrayList<Book> books = bookService.getAllBooks();
-            for (Iterator<Book> iterator = books.iterator(); iterator.hasNext(); ) {
-                Book book = iterator.next();
-                if (book.getTitle().equals(bookTitle)) {
-                    iterator.remove();
-                    System.out.println("Book titled '" + bookTitle + "' has been removed.");
-                    break;
-                }
-            }
+
+
+    private static void showAllBooks() {
+        System.out.println("All Books:");
+        CustomArrayList<Book> books = bookService.getAllBooks();
+        books.mergeSort((Book b1, Book b2) -> b1.getTitle().compareToIgnoreCase(b2.getTitle()));
+        for (int i = 0; i < books.size(); i++) {
+            Book book = books.get(i);
+            System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
         }
     }
-}
+    }

@@ -47,18 +47,9 @@ public class CustomQueue<T> {
         return data;
     }
 
-    public T peek() {
-        if (isEmpty()) {
-            throw new NoSuchElementException("Queue is empty");
-        }
-        return head.data;
-    }
 
     public boolean isEmpty() {
         return size == 0;
     }
 
-    public int size() {
-        return size;
-    }
 }

@@ -37,18 +37,9 @@ public class CustomStack<T> {
         return data;
     }
 
-    public T peek() {
-        if (isEmpty()) {
-            throw new EmptyStackException();
-        }
-        return top.data;
-    }
 
     public boolean isEmpty() {
         return size == 0;
     }
 
-    public int size() {
-        return size;
-    }
 }

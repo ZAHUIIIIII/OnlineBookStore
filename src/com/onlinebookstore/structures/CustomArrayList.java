@@ -23,19 +23,6 @@ public class CustomArrayList<T> implements Iterable<T> {
         elements[size++] = element;
     }
 
-    // Add method to insert at a specific index
-    public void add(int index, T element) {
-        // O(n) time complexity
-        if (index > size || index < 0) {
-            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
-        }
-        if (size == elements.length) {
-            resize(); // O(n)
-        }
-        System.arraycopy(elements, index, elements, index + 1, size - index);
-        elements[index] = element;
-        size++;
-    }
 
     // Remove method by index
     public void remove(int index) {
@@ -121,50 +108,50 @@ public class CustomArrayList<T> implements Iterable<T> {
         }
     }
 
-    // Method to sort the list using merge sort
-    public void mergeSort(CustomComparator<T> comparator) {
-        if (size > 1) {
-            Object[] tempArray = new Object[size];
-            mergeSortHelper(elements, tempArray, 0, size - 1, comparator);
-        }
-    }
-
-    private void mergeSortHelper(Object[] array, Object[] tempArray, int leftStart, int rightEnd, CustomComparator<T> comparator) {
-        if (leftStart >= rightEnd) {
-            return;
-        }
-        int middle = (leftStart + rightEnd) / 2;
-        mergeSortHelper(array, tempArray, leftStart, middle, comparator);
-        mergeSortHelper(array, tempArray, middle + 1, rightEnd, comparator);
-        mergeHalves(array, tempArray, leftStart, rightEnd, comparator);
-    }
-
-    private void mergeHalves(Object[] array, Object[] tempArray, int leftStart, int rightEnd, CustomComparator<T> comparator) {
-        int leftEnd = (rightEnd + leftStart) / 2;
-        int rightStart = leftEnd + 1;
-        int size = rightEnd - leftStart + 1;
-
-        int left = leftStart;
-        int right = rightStart;
-        int index = leftStart;
-
-        while (left <= leftEnd && right <= rightEnd) {
-            if (comparator.compare((T) array[left], (T) array[right]) <= 0) {
-                tempArray[index] = array[left];
-                left++;
-            } else {
-                tempArray[index] = array[right];
-                right++;
+        // Method to sort the list using merge sort
+        public void mergeSort(CustomComparator<T> comparator) {
+            if (size > 1) {
+                Object[] tempArray = new Object[size];
+                mergeSortHelper(elements, tempArray, 0, size - 1, comparator);
             }
-            index++;
         }
-
-        System.arraycopy(array, left, tempArray, index, leftEnd - left + 1);
-        System.arraycopy(array, right, tempArray, index, rightEnd - right + 1);
-        System.arraycopy(tempArray, leftStart, array, leftStart, size);
+    
+        private void mergeSortHelper(Object[] array, Object[] tempArray, int leftStart, int rightEnd, CustomComparator<T> comparator) {
+            if (leftStart >= rightEnd) {
+                return;
+            }
+            int middle = (leftStart + rightEnd) / 2;
+            mergeSortHelper(array, tempArray, leftStart, middle, comparator);
+            mergeSortHelper(array, tempArray, middle + 1, rightEnd, comparator);
+            mergeHalves(array, tempArray, leftStart, rightEnd, comparator);
+        }
+    
+        private void mergeHalves(Object[] array, Object[] tempArray, int leftStart, int rightEnd, CustomComparator<T> comparator) {
+            int leftEnd = (rightEnd + leftStart) / 2;
+            int rightStart = leftEnd + 1;
+            int size = rightEnd - leftStart + 1;
+    
+            int left = leftStart;
+            int right = rightStart;
+            int index = leftStart;
+    
+            while (left <= leftEnd && right <= rightEnd) {
+                if (comparator.compare((T) array[left], (T) array[right]) <= 0) {
+                    tempArray[index] = array[left];
+                    left++;
+                } else {
+                    tempArray[index] = array[right];
+                    right++;
+                }
+                index++;
+            }
+    
+            System.arraycopy(array, left, tempArray, index, leftEnd - left + 1);
+            System.arraycopy(array, right, tempArray, index, rightEnd - right + 1);
+            System.arraycopy(tempArray, leftStart, array, leftStart, size);
+        }
+    
+        public interface CustomComparator<T> {
+            int compare(T o1, T o2);
+        }
     }
-
-    public interface CustomComparator<T> {
-        int compare(T o1, T o2);
-    }
-}
