@@ -49,9 +49,7 @@ public class CustomerController {
         CustomArrayList<Book> shoppingCart = new CustomArrayList<>();
         CustomArrayList<Integer> quantities = new CustomArrayList<>();
         CustomArrayList<Book> allBooks = bookService.getAllBooks();
-
         while (true) {
-
             System.out.println("Options:");
             System.out.println("1. Search by Title");
             System.out.println("2. Search by Author");
@@ -61,11 +59,9 @@ public class CustomerController {
             System.out.print("Choose an option: ");
             int option = scanner.nextInt();
             scanner.nextLine(); // Consume newline
-
             if (option == 5) {
                 return;
             }
-
             switch (option) {
                 case 1, 2 -> searchAndAddBooks(allBooks, shoppingCart, quantities, option);
                 case 3 -> addMultipleBooksToCart(allBooks, shoppingCart, quantities);
@@ -117,25 +113,38 @@ public class CustomerController {
     }
 
     private static void handleBookAdditionToCart(Book book, CustomArrayList<Book> shoppingCart, CustomArrayList<Integer> quantities) {
-        if (book.getQuantity() <= 0) {
-            System.out.println("Book is out of stock. Please choose another book.");
+        int quantity = getIntInput("Enter quantity to add to cart: ");
+        if (quantity <= 0) {
+            System.out.println("Quantity must be greater than 0.");
             return;
         }
 
-        int quantity = getIntInput("Enter quantity for book (available: " + book.getQuantity() + "): ");
-        if (quantity > book.getQuantity()) {
+        if (book.getQuantity() < quantity) {
             System.out.println("Ordered quantity exceeds available stock.");
             return;
         }
 
-        shoppingCart.add(book);
-        quantities.add(quantity);
+        boolean bookExistsInCart = false;
+        for (int i = 0; i < shoppingCart.size(); i++) {
+            if (shoppingCart.get(i).getId() == book.getId()) {
+                quantities.set(i, quantities.get(i) + quantity);
+                bookExistsInCart = true;
+                break;
+            }
+        }
+
+        if (!bookExistsInCart) {
+            shoppingCart.add(book);
+            quantities.add(quantity);
+        }
+
         book.setQuantity(book.getQuantity() - quantity); // Update stock
         System.out.println("Book added to cart.");
     }
 
     private static void addMultipleBooksToCart(CustomArrayList<Book> allBooks, CustomArrayList<Book> shoppingCart, CustomArrayList<Integer> quantities) {
         System.out.println("All Books:");
+        allBooks.mergeSort((b1, b2) -> b1.getTitle().compareToIgnoreCase(b2.getTitle())); // Sort by title
         for (int i = 0; i < allBooks.size(); i++) {
             Book book = allBooks.get(i);
             System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + book.getQuantity() + ", Price: " + book.getPrice());
@@ -160,13 +169,30 @@ public class CustomerController {
             }
 
             int quantity = getIntInput("Enter quantity for book (available: " + book.getQuantity() + "): ");
+            if (quantity <= 0) {
+                System.out.println("Quantity must be greater than 0.");
+                continue;
+            }
+
             if (quantity > book.getQuantity()) {
                 System.out.println("Ordered quantity exceeds available stock.");
                 continue;
             }
 
-            shoppingCart.add(book);
-            quantities.add(quantity);
+            boolean bookExistsInCart = false;
+            for (int i = 0; i < shoppingCart.size(); i++) {
+                if (shoppingCart.get(i).getId() == book.getId()) {
+                    quantities.set(i, quantities.get(i) + quantity);
+                    bookExistsInCart = true;
+                    break;
+                }
+            }
+
+            if (!bookExistsInCart) {
+                shoppingCart.add(book);
+                quantities.add(quantity);
+            }
+
             book.setQuantity(book.getQuantity() - quantity); // Update stock
             System.out.println("Book added to cart.");
         }
@@ -177,7 +203,6 @@ public class CustomerController {
             System.out.println("Your cart is empty.");
             return;
         }
-
         System.out.println("Your Cart:");
         double totalPrice = 0;
         for (int i = 0; i < shoppingCart.size(); i++) {
@@ -188,7 +213,6 @@ public class CustomerController {
             System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + quantity + ", Price: " + book.getPrice() + ", Final Price: " + finalPrice);
         }
         System.out.println("Total Price: " + totalPrice);
-
         while (true) {
             System.out.println("Cart Options:");
             System.out.println("1. Remove Book from Cart");
@@ -197,14 +221,12 @@ public class CustomerController {
             System.out.print("Choose an option: ");
             int cartOption = scanner.nextInt();
             scanner.nextLine(); // Consume newline
-
             if (cartOption == 3) {
                 return;
             }
-
             switch (cartOption) {
                 case 1 -> removeBookFromCart(shoppingCart, quantities);
-                case 2 -> proceedToPayment(shoppingCart, quantities, totalPrice); 
+                case 2 -> proceedToPayment(shoppingCart, quantities, totalPrice);
                 default -> System.out.println("Invalid option. Please try again.");
             }
         }
@@ -225,6 +247,11 @@ public class CustomerController {
         System.out.println("Book removed from cart.");
     }
 
+
+
+
+
+
     private static void proceedToPayment(CustomArrayList<Book> shoppingCart, CustomArrayList<Integer> quantities, double totalPrice) {
         System.out.println("Your Cart:");
         for (int i = 0; i < shoppingCart.size(); i++) {
@@ -234,7 +261,6 @@ public class CustomerController {
             System.out.println((i + 1) + ". Title: " + book.getTitle() + ", Author: " + book.getAuthor() + ", Quantity: " + quantity + ", Price: " + book.getPrice() + ", Final Price: " + finalPrice);
         }
         System.out.println("Total Price: " + totalPrice);
-
         String shippingAddress = getInput("Enter shipping address: ");
         Order order = new Order("customer", shippingAddress, new CustomArrayList<>(), new CustomArrayList<>());
         for (int i = 0; i < shoppingCart.size(); i++) {
@@ -243,12 +269,10 @@ public class CustomerController {
         }
         orderService.placeOrder(order);
         System.out.println("Order placed successfully. Total Price: " + totalPrice);
-
         shoppingCart.clear();
         quantities.clear();
-        
+        System.out.println("Thank you for shopping with us!");
     }
-
     private static void viewMyOrders() {
         System.out.println("My Orders:");
         CustomArrayList<Order> orders = orderService.getAllOrders();
@@ -269,6 +293,8 @@ public class CustomerController {
                             double finalPrice = quantities.get(j) * book.getPrice();
                             totalPrice += finalPrice;
                             System.out.println("Book Name: " + book.getTitle() + ", Quantity: " + quantities.get(j) + ", Price: " + book.getPrice() + ", Final Price: " + finalPrice);
+                        } else {
+                            System.out.println("Book with ID " + bookIds.get(j) + " not found.");
                         }
                     }
                 }
@@ -277,43 +303,45 @@ public class CustomerController {
                 System.out.println();
             }
         }
-
         if (!hasOrders) {
             System.out.println("You have not placed any orders.");
+            return;
         }
-
-        String searchQuery = getInput("Enter order ID to search (or press Enter to skip): ");
-        if (!searchQuery.trim().isEmpty()) {
-            try {
-                int orderId = Integer.parseInt(searchQuery);
-                Order order = orderService.getOrderById(orderId);
-                if (order != null && order.getCustomerName().equals("customer")) {
-                    System.out.println("Order found: " + order);
-                    System.out.println("Order ID: " + order.getId());
-                    System.out.println("Shipping Address: " + order.getShippingAddress());
-                    CustomArrayList<Integer> bookIds = order.getBookIds();
-                    CustomArrayList<Integer> quantities = order.getQuantities();
-                    double totalPrice = 0;
-                    for (int j = 0; j < bookIds.size(); j++) {
-                        if (quantities.get(j) > 0) {
-                            Book book = bookService.getBookById(bookIds.get(j));
-                            if (book != null) {
-                                double finalPrice = quantities.get(j) * book.getPrice();
-                                totalPrice += finalPrice;
-                                System.out.println("Book Name: " + book.getTitle() + ", Quantity: " + quantities.get(j) + ", Price: " + book.getPrice() + ", Final Price: " + finalPrice);
-                            }
+    
+        while (true) {
+            System.out.println("Order Options:");
+            System.out.println("1. Cancel Order");
+            System.out.println("2. Return to Menu");
+            int option = getIntInput("Choose an option: ");
+            if (option == 2) {
+                return;
+            }
+            switch (option) {
+                case 1 -> {
+                    int orderId = getIntInput("Enter order ID to cancel: ");
+                    Order order = orderService.getOrderById(orderId);
+                    if (order != null && order.getCustomerName().equals("customer")) {
+                        if (!order.isApproved()) {
+                            orderService.cancelOrder(orderId);
+                            System.out.println("Order ID " + orderId + " has been canceled.");
+                        } else {
+                            System.out.println("Order ID " + orderId + " is already approved and cannot be canceled.");
                         }
+                    } else {
+                        System.out.println("Order not found or you do not have permission to cancel this order.");
                     }
-                    System.out.println("Total Price: " + totalPrice);
-                    System.out.println("Approved: " + (order.isApproved() ? "Yes" : "No"));
-                } else {
-                    System.out.println("Order not found.");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid order ID.");
+                default -> System.out.println("Invalid option. Please try again.");
             }
         }
     }
+
+
+
+
+
+
+
 
     private static String getInput(String prompt) {
         System.out.print(prompt);

@@ -6,7 +6,6 @@ import com.onlinebookstore.services.BookService;
 import com.onlinebookstore.services.OrderService;
 import com.onlinebookstore.structures.CustomArrayList;
 import com.onlinebookstore.structures.CustomStack;
-
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -125,21 +124,25 @@ public class AdminController {
             String searchQuery = getInput("Enter search query: ");
             CustomArrayList<Book> searchResults = new CustomArrayList<>();
 
-            if (searchOption == 1) {
-                for (int i = 0; i < books.size(); i++) {
-                    if (books.get(i).getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
-                        searchResults.add(books.get(i));
+            switch (searchOption) {
+                case 1 -> {
+                    for (int i = 0; i < books.size(); i++) {
+                        if (books.get(i).getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
+                            searchResults.add(books.get(i));
+                        }
                     }
                 }
-            } else if (searchOption == 2) {
-                for (int i = 0; i < books.size(); i++) {
-                    if (books.get(i).getAuthor().toLowerCase().contains(searchQuery.toLowerCase())) {
-                        searchResults.add(books.get(i));
+                case 2 -> {
+                    for (int i = 0; i < books.size(); i++) {
+                        if (books.get(i).getAuthor().toLowerCase().contains(searchQuery.toLowerCase())) {
+                            searchResults.add(books.get(i));
+                        }
                     }
                 }
-            } else {
-                System.out.println("Invalid option. Please try again.");
-                continue;
+                default -> {
+                    System.out.println("Invalid option. Please try again.");
+                    continue;
+                }
             }
 
             if (!searchResults.isEmpty()) {

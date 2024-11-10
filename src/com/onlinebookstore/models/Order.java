@@ -18,7 +18,6 @@ public class Order {
         this.approved = false;
     }
 
-    // Getters and setters with O(1) time complexity
     public int getId() {
         return id;
     }

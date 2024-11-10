@@ -18,32 +18,40 @@ public class BookService {
 
     private void initializeBooks() {
         String[] titles = {
-                "Java Programming", "Effective Java", "Clean Code", "Head First Java", "Java Concurrency in Practice",
-                "Java: The Complete Reference", "Spring in Action", "Hibernate in Action", "Java Performance", "Java Puzzlers",
-                "Java 8 in Action", "Java SE 8 for the Really Impatient", "Java: A Beginner's Guide", "Java Network Programming", "Java Cookbook",
-                "Java Design Patterns", "Java EE 7 Essentials", "JavaFX 8: Introduction by Example", "Java Web Services: Up and Running", "Java XML and JSON"
+            "Bakuman", "Akira", "Dragon Ball: The Complete Edition", 
+            "Naruto: The Official Fanbook", "One Piece: Color Walk Compendium", 
+            "Attack on Titan: The Harsh Mistress of the City", "Death Note: How to Read", "Fullmetal Alchemist: The Complete Four-Panel Comics", 
+            "My Hero Academia: School Briefs", "Sailor Moon Eternal Edition", 
+            "Bleach: Official Character Book SOULs", "Tokyo Ghoul Illustrations: zakki", "Vagabond: Deluxe Edition", 
+            "Hunter x Hunter: The Complete Guide", "Demon Slayer: Kimetsu no Yaiba Fanbook", 
+            "JoJo's Bizarre Adventure: Art of JoJo", "One Punch Man: Hero's Notebook", "Fairy Tail: Master’s Edition", 
+            "The Art of Studio Ghibli", "Attack on Titan Anthology"
         };
         String[] authors = {
-                "Joshua Bloch", "Joshua Bloch", "Robert C. Martin", "Kathy Sierra", "Brian Goetz",
-                "Herbert Schildt", "Craig Walls", "Christian Bauer", "Scott Oaks", "Joshua Bloch",
-                "Raoul-Gabriel Urma", "Cay S. Horstmann", "Herbert Schildt", "Elliotte Rusty Harold", "Ian F. Darwin",
-                "Vaskaran Sarcar", "Arun Gupta", "Carl Dea", "Martin Kalin", "Jeff Friesen"
+            "Tsugumi Ohba & Takeshi Obata", "Katsuhiro Otomo", "Akira Toriyama", 
+            "Masashi Kishimoto", "Eiichiro Oda", 
+            "Hajime Isayama", "Tsugumi Ohba", "Hiromu Arakawa", 
+            "Kohei Horikoshi", "Naoko Takeuchi", 
+            "Tite Kubo", "Sui Ishida", "Takehiko Inoue", 
+            "Yoshihiro Togashi", "Koyoharu Gotouge", 
+            "Hirohiko Araki", "ONE", "Hiro Mashima", 
+            "Hayao Miyazaki", "Hajime Isayama"
         };
         int[] quantities = {10, 15, 20, 5, 8, 12, 7, 9, 14, 6, 11, 13, 16, 4, 18, 3, 17, 19, 2, 1};
         double[] prices = {45.99, 55.99, 39.99, 49.99, 59.99, 35.99, 29.99, 65.99, 75.99, 85.99, 25.99, 45.99, 55.99, 65.99, 75.99, 85.99, 95.99, 105.99, 115.99, 125.99};
-        
+
         for (int i = 0; i < titles.length; i++) {
-            books.add(new Book(titles[i], authors[i], quantities[i], prices[i]));
+            Book book = new Book(titles[i], authors[i], quantities[i], prices[i]);
+            book.setId(nextId++);
+            books.add(book);
         }
     }
 
     public CustomArrayList<Book> getAllBooks() {
-        // O(1) time complexity for returning the list reference
         return books;
     }
 
     public Book getBookById(int id) {
-        // O(n) time complexity for linear search
         for (int i = 0; i < books.size(); i++) {
             if (books.get(i).getId() == id) {
                 return books.get(i);
@@ -53,13 +61,11 @@ public class BookService {
     }
 
     public void addBook(Book book) {
-        // O(1) average time complexity for adding a book
         book.setId(nextId++);
         books.add(book);
     }
 
     public void updateBook(Book book) {
-        // O(n) time complexity for updating a book
         for (int i = 0; i < books.size(); i++) {
             if (books.get(i).getId() == book.getId()) {
                 books.set(i, book);
@@ -69,7 +75,6 @@ public class BookService {
     }
 
     public void deleteBook(int id) {
-        // O(n) time complexity for removing a book
         for (int i = 0; i < books.size(); i++) {
             if (books.get(i).getId() == id) {
                 books.remove(i);
@@ -78,9 +83,7 @@ public class BookService {
         }
     }
 
-    // New method: Search books by title
     public CustomArrayList<Book> searchBooksByTitle(String title) {
-        // O(n) time complexity for linear search
         CustomArrayList<Book> matchingBooks = new CustomArrayList<>();
         for (int i = 0; i < books.size(); i++) {
             if (books.get(i).getTitle().equalsIgnoreCase(title)) {
@@ -88,12 +91,5 @@ public class BookService {
             }
         }
         return matchingBooks;
-    }
-
-    // New method: Sort books by price
-    public void sortBooksByPrice() {
-        // O(n log n) time complexity for merge sort
-        CustomArrayList.CustomComparator<Book> comparator = (b1, b2) -> Double.compare(b1.getPrice(), b2.getPrice());
-        books.mergeSort(comparator);
     }
 }
