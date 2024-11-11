@@ -96,14 +96,4 @@ public class BookService {
             }
         }
     }
-
-    public CustomArrayList<Book> searchBooksByTitle(String title) {
-        CustomArrayList<Book> matchingBooks = new CustomArrayList<>();
-        for (int i = 0; i < books.size(); i++) {
-            if (books.get(i).getTitle().equalsIgnoreCase(title)) {
-                matchingBooks.add(books.get(i));
-            }
-        }
-        return matchingBooks;
-    }
 }
