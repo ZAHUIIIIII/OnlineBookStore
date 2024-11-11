@@ -9,24 +9,20 @@ public class CustomStack<T> {
     private static class Node<T> {
         T data;
         Node<T> next;
-
         Node(T data) {
             this.data = data;
         }
     }
-
     public CustomStack() {
         top = null;
         size = 0;
     }
-
     public void push(T element) {
         Node<T> newNode = new Node<>(element);
         newNode.next = top;
         top = newNode;
         size++;
     }
-
     public T pop() {
         if (isEmpty()) {
             throw new EmptyStackException();
@@ -36,10 +32,7 @@ public class CustomStack<T> {
         size--;
         return data;
     }
-
-
     public boolean isEmpty() {
         return size == 0;
     }
-
 }

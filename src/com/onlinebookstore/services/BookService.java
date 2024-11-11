@@ -57,8 +57,6 @@ public class BookService {
         }
     }
 
-
-    
     public CustomArrayList<Book> getAllBooks() {
         return books;
     }
