@@ -248,8 +248,8 @@ public class CustomerController {
   private static void removeBookFromCart(CustomArrayList<Book> shoppingCart, CustomArrayList<Integer> quantities) {
     int bookNumber = getIntInput("Enter book number to remove from cart: ");
     if (bookNumber < 1 || bookNumber > shoppingCart.size()) {
-      System.out.println("Invalid book number. Please choose a valid book number.");
-      return;
+        System.out.println("Invalid book number. Please choose a valid book number.");
+        return;
     }
 
     Book book = shoppingCart.get(bookNumber - 1);
@@ -258,7 +258,19 @@ public class CustomerController {
     shoppingCart.remove(bookNumber - 1); // Remove the book from the cart
     quantities.remove(bookNumber - 1); // Remove the quantity from the list
     System.out.println("Book removed from cart.");
-  }
+
+    // Display the remaining books in the cart
+    if (shoppingCart.isEmpty()) {
+        System.out.println("Your cart is now empty.");
+    } else {
+        System.out.println("Books left in your cart:");
+        for (int i = 0; i < shoppingCart.size(); i++) {
+            Book remainingBook = shoppingCart.get(i);
+            int remainingQuantity = quantities.get(i);
+            System.out.println((i + 1) + ". Title: " + remainingBook.getTitle() + ", Author: " + remainingBook.getAuthor() + ", Quantity: " + remainingQuantity + ", Price: " + remainingBook.getPrice());
+        }
+    }
+}
 
 
   private static void proceedToPayment(CustomArrayList<Book> shoppingCart, CustomArrayList<Integer> quantities, double totalPrice) {
