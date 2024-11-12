@@ -70,6 +70,15 @@ public class BookService {
         return null;
     }
 
+    public Book getBookByTitle(String title) {
+        for (int i = 0; i < books.size(); i++) {
+            if (books.get(i).getTitle().equalsIgnoreCase(title)) {
+                return books.get(i);
+            }
+        }
+        return null;
+    }
+
     public void addBook(Book book) {
         book.setId(nextId++);
         books.add(book);

@@ -22,7 +22,7 @@ public class OrderService {
         order.setId(nextId++);
         orders.add(order);
         orderQueue.enqueue(order);
-        System.out.println("Order placed for " + order.getCustomerName());
+        // System.out.println("Order placed for " + order.getCustomerName());
     }
 
     public CustomArrayList<Order> getAllOrders() {

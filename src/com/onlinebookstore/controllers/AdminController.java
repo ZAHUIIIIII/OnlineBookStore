@@ -95,12 +95,14 @@ public class AdminController {
   private static void addBook() {
     String title;
     while (true) {
-      title = getInput("Enter book title: ");
-      if (title == null || title.trim().isEmpty()) {
-        System.out.println("Book title cannot be empty. Please try again.");
-      } else {
-        break;
-      }
+        title = getInput("Enter book title: ");
+        if (title == null || title.trim().isEmpty()) {
+            System.out.println("Book title cannot be empty. Please try again.");
+        } else if (bookService.getBookByTitle(title) != null) {
+            System.out.println("A book with this title already exists. Please enter a different title.");
+        } else {
+            break;
+        }
     }
 
     String author;
