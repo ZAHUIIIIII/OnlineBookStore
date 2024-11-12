@@ -191,9 +191,17 @@ public class AdminController {
     System.out.println("Price: " + book.getPrice());
 
     String title = getInput("Enter new book title (or 0 to keep current): ");
-    if (!title.equals("0")) {
-      book.setTitle(title);
-    }
+    while (true) {
+      title = getInput("Enter new book title (or 0 to keep current): ");
+      if (title.equals("0")) {
+          break;
+      } else if (!title.trim().isEmpty() && bookService.getBookByTitle(title) != null && bookService.getBookByTitle(title).getId() != book.getId()) {
+          System.out.println("A book with this title already exists. Please enter a different title.");
+      } else {
+          book.setTitle(title);
+          break;
+      }
+  }
 
     String author = getInput("Enter new author (or 0 to keep current): ");
     if (!author.equals("0")) {
